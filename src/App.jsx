@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SNSFeed from './pages/SNSFeed';
-import KakaoCallback from './pages/KakaoCallback';
+import KakaoCallback from './pages/kakaoCallback';
 import { useKakaoAuth } from './hooks/useKakaoAuth';
 
-// 콜백 래퍼 컴포넌트
+
 const KakaoCallbackWrapper = () => {
   const navigate = useNavigate();
   
@@ -17,7 +17,6 @@ const KakaoCallbackWrapper = () => {
   return <KakaoCallback onLoginSuccess={handleLoginSuccess} />;
 };
 
-// 메인 앱 컴포넌트
 function App() {
   const { user, isLoggedIn, loading, logout } = useKakaoAuth();
 
