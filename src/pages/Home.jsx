@@ -74,6 +74,8 @@ const Home = () => {
           )}
         </div>
       </main>
+
+          <div><h2>블로그임</h2></div>
     </div>
   );
 };

@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { getCodeFromURL, getToken, getUserData } from '../utils/kakaoAuth';
 
-const KakaoCallback = () => {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    useEffect(() => {
+const KakaoCallback = ({ onLoginSuccess }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
     const handleKakaoCallback = async () => {
       try {
         const code = getCodeFromURL();
@@ -20,18 +19,16 @@ const KakaoCallback = () => {
         const token = await getToken(code);
         console.log('토큰 발급 성공:', token);
 
-        
         const userData = await getUserData(token);
         console.log('사용자 정보:', userData);
 
-      
         const nickname = userData.properties?.nickname;
         const email = userData.kakao_account?.email;
         const profileImage = userData.properties?.profile_image;
 
         console.log(`닉네임: ${nickname}, 이메일: ${email}`);
 
-     
+        // 의도적 취약점: localStorage에 토큰 저장
         const userInfo = {
           id: userData.id,
           nickname,
@@ -43,8 +40,7 @@ const KakaoCallback = () => {
         localStorage.setItem('kakaoUserInfo', JSON.stringify(userInfo));
         localStorage.setItem('kakaoToken', token);
 
-    
-        navigate('/', { replace: true });
+        onLoginSuccess();
 
       } catch (error) {
         console.error('카카오 로그인 처리 중 오류:', error);
@@ -55,7 +51,7 @@ const KakaoCallback = () => {
     };
 
     handleKakaoCallback();
-  }, [navigate]);
+  }, [onLoginSuccess]);
 
   if (loading) {
     return (
@@ -73,7 +69,7 @@ const KakaoCallback = () => {
           <h2 className="text-lg font-semibold text-red-800 mb-2">로그인 오류</h2>
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => window.location.href = '/'}
             className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
           >
             홈으로 돌아가기
@@ -87,4 +83,3 @@ const KakaoCallback = () => {
 };
 
 export default KakaoCallback;
- 
