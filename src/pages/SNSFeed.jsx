@@ -23,6 +23,7 @@ const SNSFeed = ({ user, onLogout }) => {
     }
   ]);
 
+
   const [newPost, setNewPost] = useState('');
 
   const handlePostSubmit = (e) => {
@@ -45,7 +46,6 @@ const SNSFeed = ({ user, onLogout }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 네비게이션 */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -54,11 +54,7 @@ const SNSFeed = ({ user, onLogout }) => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <img
-              src={user.profileImage || 'https://via.placeholder.com/40'}
-              alt={user.nickname}
-              className="w-8 h-8 rounded-full"
-            />
+            
             <span className="text-sm text-gray-700 hidden sm:block">{user.nickname}</span>
             <button
               onClick={onLogout}
@@ -72,14 +68,8 @@ const SNSFeed = ({ user, onLogout }) => {
       </header>
 
       <main className="max-w-2xl mx-auto p-4">
-        {/* 게시물 작성 */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex items-start space-x-3">
-            <img
-              src={user.profileImage || 'https://via.placeholder.com/40'}
-              alt={user.nickname}
-              className="w-10 h-10 rounded-full"
-            />
             <div className="flex-1">
               <textarea
                 value={newPost}
@@ -107,23 +97,17 @@ const SNSFeed = ({ user, onLogout }) => {
           </div>
         </div>
 
-        {/* 게시물 피드 */}
         <div className="space-y-4">
           {posts.map((post) => (
             <div key={post.id} className="bg-white rounded-lg shadow-sm p-4">
               <div className="flex items-start space-x-3 mb-3">
-                <img
-                  src={post.authorImage}
-                  alt={post.author}
-                  className="w-10 h-10 rounded-full"
-                />
+                
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{post.author}</h3>
                   <p className="text-xs text-gray-500">{post.timestamp}</p>
                 </div>
               </div>
 
-              {/* 의도적 취약점: dangerouslySetInnerHTML 사용 */}
               <div
                 className="text-gray-800 mb-3"
                 dangerouslySetInnerHTML={{ __html: post.content }}
@@ -142,6 +126,8 @@ const SNSFeed = ({ user, onLogout }) => {
             </div>
           ))}
         </div>
+        
+      
 
         {/* 취약점 표시 */}
         <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
