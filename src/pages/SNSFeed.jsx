@@ -22,7 +22,10 @@ const SNSFeed = ({ user, onLogout }) => {
       timestamp: '3시간 전'
     }
   ]);
-
+  const likeUp = (postId) => {
+    setPosts(posts.map(post => post.id === postId ? {...post, likes: post.likes +1}: post))
+  }
+  const [name, setName] = useState("블로그")
 
   const [newPost, setNewPost] = useState('');
 
@@ -43,7 +46,7 @@ const SNSFeed = ({ user, onLogout }) => {
     setPosts([post, ...posts]);
     setNewPost('');
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -97,6 +100,12 @@ const SNSFeed = ({ user, onLogout }) => {
           </div>
         </div>
 
+
+        
+        <div>{name}</div>
+
+
+
         <div className="space-y-4">
           {posts.map((post) => (
             <div key={post.id} className="bg-white rounded-lg shadow-sm p-4">
@@ -116,8 +125,11 @@ const SNSFeed = ({ user, onLogout }) => {
               <div className="flex items-center space-x-6 text-gray-600 border-t border-gray-100 pt-3">
                 <button className="flex items-center space-x-1 hover:text-red-500 transition-colors">
                   <Heart className="w-5 h-5" />
-                  <span className="text-sm">{post.likes}</span>
+                  <span onClick = {() => likeUp(post.id)} className="text-sm">{post.likes}</span>
                 </button>
+
+
+
                 <button className="flex items-center space-x-1 hover:text-blue-500 transition-colors">
                   <MessageCircle className="w-5 h-5" />
                   <span className="text-sm">{post.comments}</span>
