@@ -16,7 +16,7 @@ const SNSFeed = ({ user, onLogout }) => {
       id: 2,
       author: '테스트유저2',
       authorImage: 'https://via.placeholder.com/40',
-      content: 'React로 SNS 만들기 재미있네요!',
+      content: '만들기 잼',
       likes: 12,
       comments: 4,
       timestamp: '3시간 전'
@@ -28,6 +28,39 @@ const SNSFeed = ({ user, onLogout }) => {
   const [name, setName] = useState("블로그")
 
   const [newPost, setNewPost] = useState('');
+
+
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    nickname: user.nickname,
+    statusMessage: user.statusMessage || ''
+  });
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    
+    // 백엔드 API 호출 (나중에 구현)
+    try {
+      const response = await fetch('http://localhost:5000/api/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify(profileData)
+      });
+      
+      if (response.ok) {
+        alert('프로필 수정 완료!');
+        setIsEditingProfile(false);
+        // user 정보 업데이트 (부모 컴포넌트에 전달 필요)
+      }
+    } catch (error) {
+      console.error('프로필 수정 실패:', error);
+    }
+  };
+
 
   const handlePostSubmit = (e) => {
     e.preventDefault();
@@ -59,6 +92,12 @@ const SNSFeed = ({ user, onLogout }) => {
           <div className="flex items-center space-x-4">
             
             <span className="text-sm text-gray-700 hidden sm:block">{user.nickname}</span>
+             <button
+              onClick={() => setIsEditingProfile(true)}
+              className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+            >
+              프로필 수정
+            </button>
             <button
               onClick={onLogout}
               className="text-gray-600 hover:text-red-600 transition-colors"
@@ -71,6 +110,55 @@ const SNSFeed = ({ user, onLogout }) => {
       </header>
 
       <main className="max-w-2xl mx-auto p-4">
+        {isEditingProfile && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold mb-4">프로필 수정</h2>
+              <form onSubmit={handleProfileUpdate}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    닉네임
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.nickname}
+                    onChange={(e) => setProfileData({...profileData, nickname: e.target.value})}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    상태 메시지
+                  </label>
+                  <textarea
+                    value={profileData.statusMessage}
+                    onChange={(e) => setProfileData({...profileData, statusMessage: e.target.value})}
+                    className="w-full border border-gray-300 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    rows={3}
+                    placeholder="상태 메시지를 입력하세요"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingProfile(false)}
+                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-lg"
+                  >
+                    저장
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex items-start space-x-3">
             <div className="flex-1">
