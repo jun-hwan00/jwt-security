@@ -1,12 +1,7 @@
-# React + Vite
+# 소셜 로그인 기반 SNS의 프론트엔드 JWT 취약점 분석 및 보안 시스템 구현
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+1. 취약점 분석: LocalStorage 저장 방식과 무분별한 HTML 렌더링(dangerouslySetInnerHTML)의 위험성 증명
 
-Currently, two official plugins are available:
+2. 공격 시나리오 실증: Stored XSS를 통한 토큰 탈취 및 계정 탈취(Account Takeover) 시연
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. 보안 강화: HttpOnly Cookie, DOMPurify, CSP를 적용한 안전한 인증 아키텍처 구현
