@@ -1,10 +1,19 @@
 import React from 'react';
 import { Camera } from 'lucide-react';
-import { requestKakaoLogin } from '../utils/kakaoAuth';
 
 const LoginPage = () => {
   const handleKakaoLogin = () => {
-    requestKakaoLogin();
+    
+    const REST_API_KEY = '75488b61c393b0af86caaf9a94b182e9'; 
+    
+    
+    const REDIRECT_URI = 'http://localhost:5173/auth/callback'; 
+    
+    
+    const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+    console.log('🔗 카카오 URL:', kakaoURL);
+    
+    window.location.href = kakaoURL;
   };
 
   return (
@@ -34,12 +43,6 @@ const LoginPage = () => {
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
             <p className="text-xs text-red-600 text-center">
               ⚠️ 이 애플리케이션은 보안 취약점 연구용입니다
-            </p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
-            <p className="text-xs text-blue-600 text-center">
-              💡 실제 카카오 로그인을 사용하려면 utils/kakaoAuth.js의 CLIENT_ID를 설정하세요
             </p>
           </div>
         </div>

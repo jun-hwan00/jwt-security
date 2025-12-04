@@ -1,85 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import { getCodeFromURL, getToken, getUserData } from '../utils/kakaoAuth';
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; 
 
 const KakaoCallback = ({ onLoginSuccess }) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('카카오 인가 코드를 확인 중입니다...');
+  const hasRequested = useRef(false); 
   useEffect(() => {
-    const handleKakaoCallback = async () => {
+   
+    if (hasRequested.current) return;
+    
+    const loginHandler = async () => {
       try {
-        const code = getCodeFromURL();
+        const code = new URL(window.location.href).searchParams.get("code");
         
         if (!code) {
-          setError('인가 코드를 받아올 수 없습니다.');
-          return;
+            setStatus('인가 코드가 없습니다. 다시 로그인해주세요.');
+            return;
         }
-
-        console.log('인가 코드:', code);
-        const token = await getToken(code);
-        console.log('토큰 발급 성공:', token);
-
-        const userData = await getUserData(token);
-        console.log('사용자 정보:', userData);
-
-        const nickname = userData.properties?.nickname;
-        const email = userData.kakao_account?.email;
-        const profileImage = userData.properties?.profile_image;
-
-        console.log(`닉네임: ${nickname}, 이메일: ${email}`);
-
-        // 의도적 취약점: localStorage에 토큰 저장
-        const userInfo = {
-          id: userData.id,
-          nickname,
-          email,
-          profileImage,
-          token
-        };
         
-        localStorage.setItem('kakaoUserInfo', JSON.stringify(userInfo));
-        localStorage.setItem('kakaoToken', token);
+    
+        hasRequested.current = true;
+        
+        console.log("1. 인가 코드 발견:", code);
+        setStatus('2. 서버로 로그인 요청 중...');
 
-        onLoginSuccess();
+        const response = await axios.post('http://localhost:4000/api/auth/kakao', {
+            code: code 
+        });
+
+        const { accessToken, user } = response.data;
+        console.log("3. 서버로부터 받은 토큰:", accessToken);
+
+        localStorage.setItem('kakaoToken', accessToken);
+        localStorage.setItem('kakaoUserInfo', JSON.stringify(user));
+
+        setStatus('로그인 성공! 메인으로 이동합니다.');
+        
+        if (onLoginSuccess) {
+            onLoginSuccess(user);
+        }
+        
+        setTimeout(() => navigate('/'), 1000);
 
       } catch (error) {
-        console.error('카카오 로그인 처리 중 오류:', error);
-        setError('로그인 처리 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
+        console.error("로그인 에러:", error);
+        hasRequested.current = false; 
+        setStatus('로그인 실패. 다시 시도해주세요.');
       }
     };
 
-    handleKakaoCallback();
-  }, [onLoginSuccess]);
+    loginHandler();
+  }, []); 
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
-        <p className="mt-4 text-gray-600">카카오 로그인 처리중...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">로그인 오류</h2>
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
-          >
-            홈으로 돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen">
+       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mb-4"></div>
+       <h2 className="text-xl font-bold text-gray-700">{status}</h2>
+    </div>
+  );
 };
 
 export default KakaoCallback;
