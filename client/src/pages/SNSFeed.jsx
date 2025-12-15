@@ -1,27 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Heart, MessageCircle, Send, LogOut } from 'lucide-react';
+import axios from 'axios';
 
 const SNSFeed = ({ user, onLogout }) => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: '테스트유저1',
-      authorImage: 'https://via.placeholder.com/40',
-      content: '게시글 test',
-      likes: 5,
-      comments: 2,
-      timestamp: '1시간 전'
-    },
-    {
-      id: 2,
-      author: '테스트유저2',
-      authorImage: 'https://via.placeholder.com/40',
-      content: '만들기 잼',
-      likes: 12,
-      comments: 4,
-      timestamp: '3시간 전'
-    }
-  ]);
+  const [posts, setPosts] = useState([]);
   const likeUp = (postId) => {
     setPosts(posts.map(post => post.id === postId ? {...post, likes: post.likes +1}: post))
   }
@@ -29,55 +11,75 @@ const SNSFeed = ({ user, onLogout }) => {
 
   const [newPost, setNewPost] = useState('');
 
+  // 게시물 불러오기
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await axios.get('http://localhost:4000/api/posts');
+      setPosts(response.data.posts);
+    } catch (error) {
+      console.error('게시물 불러오기 실패:', error);
+    }
+  };
+
 
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState({
     nickname: user.nickname,
-    statusMessage: user.statusMessage || ''
+    statusMessage: user.statusMessage || '',
+    profileImage: user.profileImage || ''
   });
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-    
-    // 백엔드 API 호출 (나중에 구현)
+
     try {
-      const response = await fetch('http://localhost:5000/api/profile', {
-        method: 'PATCH',
+      const response = await axios.patch('http://localhost:4000/api/profile', profileData, {
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify(profileData)
+          'Authorization': `Bearer ${localStorage.getItem('kakaoToken')}`
+        }
       });
-      
-      if (response.ok) {
+
+      if (response.data.success) {
         alert('프로필 수정 완료!');
         setIsEditingProfile(false);
-        // user 정보 업데이트 (부모 컴포넌트에 전달 필요)
+        // localStorage의 유저 정보도 업데이트
+        const updatedUser = { ...user, ...response.data.user };
+        localStorage.setItem('kakaoUserInfo', JSON.stringify(updatedUser));
       }
     } catch (error) {
       console.error('프로필 수정 실패:', error);
+      alert('프로필 수정에 실패했습니다.');
     }
   };
 
 
-  const handlePostSubmit = (e) => {
+  const handlePostSubmit = async (e) => {
     e.preventDefault();
     if (!newPost.trim()) return;
 
-    const post = {
-      id: Date.now(),
-      author: user.nickname,
-      authorImage: user.profileImage || 'https://via.placeholder.com/40',
-      content: newPost,
-      likes: 0,
-      comments: 0,
-      timestamp: '방금 전'
-    };
+    try {
+      // 의도적 취약점: content를 그대로 전송 (sanitization 없음)
+      const response = await axios.post('http://localhost:4000/api/posts', {
+        author: user.nickname,
+        authorImage: user.profileImage || 'https://via.placeholder.com/40',
+        content: newPost,  // XSS 취약점: 악성 스크립트가 그대로 저장됨
+        userId: user.id || 'anonymous'
+      });
 
-    setPosts([post, ...posts]);
-    setNewPost('');
+      if (response.data.success) {
+        // 새 게시물을 목록 맨 위에 추가
+        setPosts([response.data.post, ...posts]);
+        setNewPost('');
+      }
+    } catch (error) {
+      console.error('게시물 작성 실패:', error);
+      alert('게시물 작성에 실패했습니다.');
+    }
   };
   
   return (
@@ -90,7 +92,14 @@ const SNSFeed = ({ user, onLogout }) => {
           </div>
           
           <div className="flex items-center space-x-4">
-            
+            {user.profileImage && (
+              <img
+                src={user.profileImage}
+                alt="프로필"
+                className="w-8 h-8 rounded-full object-cover"
+                onError={(e) => e.target.style.display = 'none'}
+              />
+            )}
             <span className="text-sm text-gray-700 hidden sm:block">{user.nickname}</span>
              <button
               onClick={() => setIsEditingProfile(true)}
@@ -126,7 +135,30 @@ const SNSFeed = ({ user, onLogout }) => {
                     className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                   />
                 </div>
-                
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    프로필 이미지 URL
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.profileImage}
+                    onChange={(e) => setProfileData({...profileData, profileImage: e.target.value})}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  {profileData.profileImage && (
+                    <div className="mt-2">
+                      <img
+                        src={profileData.profileImage}
+                        alt="미리보기"
+                        className="w-20 h-20 rounded-full object-cover"
+                        onError={(e) => e.target.src = 'https://via.placeholder.com/80'}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     상태 메시지
@@ -190,7 +222,7 @@ const SNSFeed = ({ user, onLogout }) => {
 
 
         
-        <div>{name}</div>
+        
 
 
 
