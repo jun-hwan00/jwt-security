@@ -1,0 +1,24 @@
+{
+  "name": "jwt-attacker-server",
+  "version": "1.0.0",
+  "description": "공격자 서버 - JWT 탈취 시연용 (연구 목적)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "xss",
+    "jwt-theft",
+    "security-research"
+  ],
+  "author": "장준환",
+  "license": "MIT"
+}

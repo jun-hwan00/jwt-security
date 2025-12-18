@@ -1,0 +1,29 @@
+{
+  "name": "jwt-security-research",
+  "version": "1.0.0",
+  "description": "JWT 보안 취약점 연구 프로젝트 (졸업논문용)",
+  "scripts": {
+    "server": "cd server && node index.js",
+    "attacker": "cd attacker-server && node index.js",
+    "client": "cd client && npm run dev",
+    "install-all": "cd client && npm install && cd ../server && npm install && cd ../attacker-server && npm install"
+  },
+  "keywords": [
+    "jwt",
+    "security",
+    "xss",
+    "oauth",
+    "react",
+    "vulnerability"
+  ],
+  "author": "장준환",
+  "license": "MIT",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3"
+  }
+}
